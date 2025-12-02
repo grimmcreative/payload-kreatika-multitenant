@@ -1,0 +1,59 @@
+{
+  "name": "@kreatika/payload-multitenant",
+  "version": "1.0.0",
+  "description": "Multi-tenant plugin for Payload CMS 3.x with React 19 and Next.js 15 support",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc && find src -name '*.css' -exec sh -c 'mkdir -p \"dist/$(dirname \"${1#src/}\")\" && cp \"$1\" \"dist/${1#src/}\"' _ {} \\;",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "payload",
+    "payloadcms",
+    "multi-tenant",
+    "multitenant",
+    "saas",
+    "nextjs",
+    "react",
+    "plugin"
+  ],
+  "author": {
+    "name": "Maximilian A. Grimm",
+    "email": "grimm@kreatika.de",
+    "url": "https://kreatika.de"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grimmcreative/payload-kreatika-multitenant"
+  },
+  "bugs": {
+    "url": "https://github.com/grimmcreative/payload-kreatika-multitenant/issues"
+  },
+  "homepage": "https://github.com/grimmcreative/payload-kreatika-multitenant#readme",
+  "peerDependencies": {
+    "next": "^15.0.0",
+    "payload": "^3.0.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "payload": "^3.65.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@payloadcms/ui": "^3.65.0"
+  }
+}
