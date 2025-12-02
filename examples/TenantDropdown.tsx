@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
-import './styles.css'
 
 interface Tenant {
   id: number | string
@@ -15,12 +14,12 @@ export const TenantDropdown: React.FC = () => {
   const [selectedTenant, setSelectedTenant] = useState<string>('all')
   const [loading, setLoading] = useState(true)
 
-  // Only show for super-admins
-  if (user?.role !== 'super-admin') {
-    return null
-  }
-
   useEffect(() => {
+    if (user?.role !== 'super-admin') {
+      setLoading(false)
+      return
+    }
+
     const fetchTenants = async () => {
       try {
         const response = await fetch('/api/tenants?limit=1000', {
@@ -40,7 +39,6 @@ export const TenantDropdown: React.FC = () => {
 
     fetchTenants()
 
-    // Load saved selection from cookie
     const getCookie = (name: string): string | null => {
       const value = `; ${document.cookie}`
       const parts = value.split(`; ${name}=`)
@@ -52,49 +50,46 @@ export const TenantDropdown: React.FC = () => {
     if (tenantFromCookie && tenantFromCookie !== 'all') {
       setSelectedTenant(tenantFromCookie)
     }
-  }, [])
+  }, [user])
 
   const handleTenantChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value
     setSelectedTenant(value)
 
-    // Set cookie with 30-day expiration
     const expires = new Date()
     expires.setDate(expires.getDate() + 30)
     document.cookie = `payload-selected-tenant=${value}; path=/; expires=${expires.toUTCString()}`
-
-    // Reload the page to apply the filter
     window.location.reload()
   }
 
   const handleReset = () => {
     setSelectedTenant('all')
-
-    // Set cookie back to 'all'
     const expires = new Date()
     expires.setDate(expires.getDate() + 30)
     document.cookie = `payload-selected-tenant=all; path=/; expires=${expires.toUTCString()}`
-
-    // Reload the page
     window.location.reload()
+  }
+
+  if (!user || user.role !== 'super-admin') {
+    return null
   }
 
   if (loading) {
     return (
-      <div className="tenant-dropdown-wrapper">
-        <div className="tenant-dropdown-container">
-          <div className="tenant-dropdown-loading">Lade Tenants...</div>
+      <div style={styles.wrapper}>
+        <div style={styles.container}>
+          <div style={styles.loading}>Loading tenants...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="tenant-dropdown-wrapper">
-      <div className="tenant-dropdown-container">
-        <div className="tenant-dropdown-header">
+    <div style={styles.wrapper}>
+      <div style={styles.container}>
+        <div style={styles.header}>
           <svg
-            className="tenant-dropdown-icon"
+            style={styles.icon}
             width="20"
             height="20"
             viewBox="0 0 20 20"
@@ -109,16 +104,19 @@ export const TenantDropdown: React.FC = () => {
               strokeLinejoin="round"
             />
           </svg>
-          <span className="tenant-dropdown-label">Tenant Filter</span>
+          <span style={styles.label}>Tenant Filter</span>
         </div>
-        <div className="tenant-dropdown-select-wrapper">
+        <div style={styles.selectWrapper}>
           <select
             id="tenant-selector"
             value={selectedTenant}
             onChange={handleTenantChange}
-            className={`tenant-dropdown-select ${selectedTenant !== 'all' ? 'active' : ''}`}
+            style={{
+              ...styles.select,
+              ...(selectedTenant !== 'all' ? styles.selectActive : {}),
+            }}
           >
-            <option value="all">Alle Tenants</option>
+            <option value="all">All Tenants</option>
             {tenants.map((tenant) => (
               <option key={tenant.id} value={tenant.id}>
                 {tenant.name}
@@ -129,9 +127,9 @@ export const TenantDropdown: React.FC = () => {
             <button
               type="button"
               onClick={handleReset}
-              className="tenant-dropdown-reset"
-              aria-label="Filter zurücksetzen"
-              title="Filter zurücksetzen"
+              style={styles.reset}
+              aria-label="Reset filter"
+              title="Reset filter"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path
@@ -148,4 +146,85 @@ export const TenantDropdown: React.FC = () => {
       </div>
     </div>
   )
+}
+
+const styles: Record<string, React.CSSProperties> = {
+  wrapper: {
+    margin: 0,
+    padding: 0,
+    borderBottom: '1px solid var(--theme-elevation-150)',
+  },
+  container: {
+    padding: 'var(--base) 0',
+    background: 'var(--theme-elevation-0)',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    marginBottom: 'calc(var(--base) * 0.75)',
+  },
+  icon: {
+    color: 'var(--theme-elevation-500)',
+    flexShrink: 0,
+  },
+  label: {
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    color: 'var(--theme-elevation-600)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    margin: 0,
+  },
+  selectWrapper: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+  },
+  select: {
+    flex: 1,
+    width: '100%',
+    padding: 'calc(var(--base) * 0.5) calc(var(--base) * 0.75)',
+    paddingRight: 'calc(var(--base) * 2)',
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: 'var(--border-radius-s)',
+    background: 'var(--theme-input-bg)',
+    color: 'var(--theme-text)',
+    fontSize: '0.875rem',
+    fontFamily: 'inherit',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    appearance: 'none',
+    backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right calc(var(--base) * 0.75) center',
+    backgroundSize: '12px',
+  },
+  selectActive: {
+    borderColor: 'var(--theme-success-500)',
+    backgroundColor: 'var(--theme-success-50)',
+    boxShadow: '0 0 0 1px var(--theme-success-200)',
+  },
+  reset: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: 0,
+    border: '1px solid var(--theme-elevation-150)',
+    borderRadius: 'var(--border-radius-s)',
+    background: 'var(--theme-elevation-0)',
+    color: 'var(--theme-elevation-600)',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+    flexShrink: 0,
+  },
+  loading: {
+    padding: 'calc(var(--base) * 0.5)',
+    fontSize: '0.875rem',
+    color: 'var(--theme-elevation-500)',
+    fontStyle: 'italic',
+  },
 }

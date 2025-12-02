@@ -7,6 +7,10 @@
  * @license MIT
  */
 
+// Export plugin function
+export { multiTenantPlugin } from './plugin'
+export type { MultiTenantPluginOptions } from './plugin'
+
 // Export helpers
 export {
   getSelectedTenantFromCookie,
@@ -15,9 +19,6 @@ export {
   getTenantFilterOptions,
   getUserIdsForTenants,
 } from './lib/helpers'
-
-// Export components
-export { TenantDropdown } from './components/TenantDropdown'
 
 // Export types
 export * from './types'

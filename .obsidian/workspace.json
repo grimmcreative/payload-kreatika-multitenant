@@ -185,6 +185,17 @@
   },
   "active": "999ef180099dd3a1",
   "lastOpenFiles": [
+    "examples/TenantDropdown.tsx",
+    "examples",
+    "node_modules/@esbuild/sunos-x64",
+    "node_modules/@esbuild/openharmony-arm64",
+    "node_modules/@esbuild/openbsd-x64",
+    "node_modules/@esbuild/openbsd-arm64",
+    "node_modules/@esbuild/netbsd-x64",
+    "node_modules/@esbuild/netbsd-arm64",
+    "node_modules/@esbuild/linux-x64",
+    "node_modules/@esbuild/linux-s390x",
+    "node_modules/@esbuild/linux-riscv64",
     "().md",
     "README.md",
     "CHANGELOG.md"

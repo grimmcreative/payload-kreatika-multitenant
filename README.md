@@ -9,7 +9,6 @@ A production-ready alternative to the official `@payloadcms/plugin-multi-tenant`
 ✅ **React 19 + Next.js 15 Compatible** - Works flawlessly with the latest versions
 ✅ **Cookie-Based Tenant Filtering** - Super-admins can filter data by tenant in the admin UI
 ✅ **Automatic Access Control** - Role-based permissions for multi-tenant data
-✅ **Tenant Dropdown Component** - Beautiful UI component for tenant selection
 ✅ **4-Level Cookie Parsing** - Reliable cookie access in Payload 3.x environment
 ✅ **TypeScript** - Fully typed for excellent DX
 ✅ **Zero Dependencies** - Only peer dependencies on Payload, React, and Next.js
@@ -102,99 +101,95 @@ export const Users: CollectionConfig = {
 }
 ```
 
-### 3. Add Tenant Dropdown to Admin UI
+### 3. Configure the Plugin
 
 In your `payload.config.ts`:
 
 ```typescript
 import { buildConfig } from 'payload'
+import { multiTenantPlugin } from '@kreatika/payload-multitenant'
 
+const isSuperAdmin = (user: { role?: string } | null) => user?.role === 'super-admin'
+
+export default buildConfig({
+  // ... other config
+  plugins: [
+    multiTenantPlugin({
+      tenantsSlug: 'tenants',
+      collections: {
+        users: {},
+        media: {},
+        pages: {},
+        // Add all collections that should be tenant-scoped
+      },
+      userHasAccessToAllTenants: (user) => isSuperAdmin(user),
+    }),
+  ],
+})
+```
+
+The plugin will automatically:
+- Add a `tenants` array field to each configured collection
+- Set up access control for create/read/update/delete operations
+- Filter data based on the selected tenant cookie for super-admins
+- Restrict regular users to only see their assigned tenants' data
+
+### 4. Add Tenant Filter Dropdown (Super-Admin UI)
+
+**Important:** Due to React Context limitations with external packages, the TenantDropdown component must be created in your application.
+
+Create `src/components/admin/TenantDropdown.tsx` in your project. You can find a complete implementation example at: https://github.com/grimmcreative/payload-kreatika-multitenant/tree/main/examples
+
+Then register it in your `payload.config.ts`:
+
+```typescript
 export default buildConfig({
   admin: {
     components: {
-      beforeNavLinks: ['@kreatika/payload-multitenant#TenantDropdown'],
+      beforeNavLinks: ['@/components/admin/TenantDropdown#TenantDropdown'],
     },
   },
   // ... rest of config
 })
 ```
 
-### 4. Add Multi-Tenant Access Control to Collections
+### 5. Add Access Control to Tenants Collection
 
-Example for a `Pages` collection:
+The Tenants collection itself needs manual access control since it doesn't have a `tenants` field:
 
 ```typescript
-// collections/Pages.ts
-import type { CollectionConfig } from 'payload'
-import {
-  getSelectedTenantFromCookie,
-  getUserTenantIds,
-  getTenantFilterOptions,
-} from '@kreatika/payload-multitenant'
+// collections/Tenants.ts
+import { getSelectedTenantFromCookie } from '@kreatika/payload-multitenant'
 
-export const Pages: CollectionConfig = {
-  slug: 'pages',
+export const Tenants: CollectionConfig = {
+  slug: 'tenants',
   access: {
-    read: async ({ req }) => {
-      const { user, payload } = req
-
-      // Super-admins can filter by selected tenant
-      if (user?.role === 'super-admin') {
+    read: ({ req }) => {
+      if (req.user?.role === 'super-admin') {
         const selectedTenant = getSelectedTenantFromCookie(req)
         if (selectedTenant) {
-          return {
-            tenant: {
-              equals: selectedTenant,
-            },
-          }
+          return { id: { equals: selectedTenant } }
         }
-        return true // No filter = see all
+        return true
       }
-
-      // Tenant users only see their tenant's pages
-      if (user?.id) {
-        const tenantIds = await getUserTenantIds(user.id, payload)
-        if (tenantIds.length > 0) {
-          return {
-            tenant: {
-              in: tenantIds,
-            },
-          }
-        }
-      }
-
-      return false
+      return true
     },
-    create: ({ req: { user } }) => {
-      return Boolean(user && user.tenants && user.tenants.length > 0)
-    },
-    update: async ({ req }) => {
-      // Same as read access
-    },
-    delete: async ({ req }) => {
-      // Same as read access
-    },
+    // ... other access controls
   },
-  fields: [
-    {
-      name: 'tenant',
-      type: 'relationship',
-      relationTo: 'tenants',
-      required: true,
-      admin: {
-        position: 'sidebar',
-      },
-      filterOptions: getTenantFilterOptions(),
-    },
-    {
-      name: 'title',
-      type: 'text',
-      required: true,
-    },
-    // ... other fields
-  ],
+  // ... fields
 }
 ```
+
+### 6. Plugin Handles Access Control Automatically
+
+Once configured, the plugin automatically handles access control for all configured collections. You don't need to manually add access control functions - the plugin does this for you!
+
+For example, if you add `pages: {}` to the plugin configuration, it will:
+- Add a `tenants` array field to the Pages collection
+- Automatically filter pages based on the selected tenant cookie for super-admins
+- Automatically restrict regular users to only see pages from their assigned tenants
+
+**No manual access control code needed for configured collections!**
 
 ## API Reference
 
@@ -245,18 +240,11 @@ Gets all user IDs that belong to specific tenants.
 
 **Returns:** `Promise<(number | string)[]>`
 
-### Components
+### UI Components
 
-#### `TenantDropdown`
+The plugin does not export UI components directly due to React Context limitations with external packages. Instead, you should implement the TenantDropdown component in your own application.
 
-React component that displays a tenant filter dropdown in the admin sidebar (only visible to super-admins).
-
-**Features:**
-- Automatic cookie management
-- Active state styling
-- Reset button
-- Full sidebar width
-- PayloadCMS design system integration
+See the examples folder for a complete implementation: https://github.com/grimmcreative/payload-kreatika-multitenant/tree/main/examples
 
 ## How It Works
 

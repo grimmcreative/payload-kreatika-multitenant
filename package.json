@@ -1,11 +1,12 @@
 {
   "name": "@kreatika/payload-multitenant",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Multi-tenant plugin for Payload CMS 3.x with React 19 and Next.js 15 support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
+    "examples",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -54,6 +55,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@payloadcms/ui": "^3.65.0"
+    "@payloadcms/ui": "^3.64.0"
   }
 }
