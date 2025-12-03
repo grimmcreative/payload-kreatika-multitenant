@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-12-03
+
+### Changed
+- Updated documentation and changelog to reflect current state
+- Improved package metadata
+
+### Fixed
+- Documentation consistency
+
+## [1.2.0] - 2025-12-02
+
+### Changed
+- **BREAKING**: Refactored TenantDropdown component to example-only implementation
+- Moved `TenantDropdown` component to `examples/TenantDropdown.tsx`
+- Enhanced TenantDropdown with improved styling and error handling
+
+### Added
+- Full multi-tenant plugin implementation (`src/plugin.ts`)
+- Automatic tenant-scoped access control for collections
+- Cookie-based tenant filtering for super-admins with automatic fallback
+- Plugin configuration options:
+  - `tenantsSlug`: Customize tenant collection slug
+  - `collections`: Define tenant-scoped collections
+  - `userHasAccessToAllTenants`: Custom logic for admin access
+- Auto-injection of tenant relationships in collection configs
+- Comprehensive examples and documentation updates
+
+### Removed
+- `src/components/TenantDropdown/` directory (moved to examples)
+- `src/components/TenantDropdown/styles.css` (now inline in example)
+
+## [1.1.0] - 2025-12-02
+
+### Added
+- Plugin architecture for easier integration
+- Enhanced tenant filtering capabilities
+- Improved TypeScript type definitions
+
 ## [1.0.0] - 2025-01-02
 
 ### Added
